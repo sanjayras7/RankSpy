@@ -440,6 +440,30 @@ describe("scoreTags", () => {
       expect(h1Score?.score).toBe(0);
       expect(h1Score?.status).toBe("warning");
     });
+
+    it("scores zero when multiple H1s are detected", async () => {
+      const parsed: ParsedTagObject = {
+        title: null,
+        metaDescription: null,
+        metaRobots: null,
+        ogTitle: null,
+        ogDescription: null,
+        ogImage: null,
+        ogUrl: null,
+        canonical: null,
+        h1: "First Heading | Second Heading",
+        jsonLd: null,
+        bodyExcerpt: null,
+      };
+
+      const result = await scoreTags(parsed);
+      const h1Score = result.scores.find((s) => s.tag === "h1");
+
+      expect(h1Score?.score).toBe(0);
+      expect(h1Score?.status).toBe("warning");
+      expect(h1Score?.problem).toContain("Multiple H1 headings");
+      expect(h1Score?.problem).toContain("exactly one");
+    });
   });
 
   describe("Open Graph tags scoring", () => {

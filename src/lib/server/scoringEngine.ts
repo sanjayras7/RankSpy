@@ -228,6 +228,18 @@ function scoreH1(value: string | null): TagScore {
     };
   }
 
+  // Detect multiple H1s (parser uses " | " separator)
+  if (value.includes(" | ")) {
+    return {
+      tag: "h1",
+      value,
+      score: 0,
+      maxScore,
+      status: "warning",
+      problem: "Multiple H1 headings found. A page should have exactly one H1.",
+    };
+  }
+
   return {
     tag: "h1",
     value,
