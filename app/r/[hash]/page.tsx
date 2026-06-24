@@ -16,7 +16,7 @@ async function fetchShareResult(hash: string): Promise<{ data: AuditResult } | {
   try {
     const headersList = await headers();
     const host = headersList.get("host") ?? "localhost:3000";
-    const protocol = host.includes("localhost") && !host.startsWith("localhost:") ? "http" : "http";
+    const protocol = host.includes("localhost") ? "http" : "https";
     const base = `${protocol}://${host}`;
 
     const response = await fetch(`${base}/api/share/${hash}`, {
