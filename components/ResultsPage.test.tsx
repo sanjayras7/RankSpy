@@ -119,6 +119,51 @@ describe("ResultsPage", () => {
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(message));
   });
 
+  it("renders the 'Analyze Another URL' button linking to / with mixed results", async () => {
+    render(
+      <ResultsPage url="https://example.com" analyze={async () => mixedResult} />,
+    );
+
+    await waitFor(() => expect(screen.getByText("64/100")).toBeInTheDocument());
+
+    const link = screen.getByRole("link", { name: "Analyze Another URL" });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/");
+  });
+
+  it("renders the 'Analyze Another URL' button in the perfect-score state", async () => {
+    render(
+      <ResultsPage url="https://example.com" analyze={async () => perfectResult} />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Your meta tags are solid.")).toBeInTheDocument(),
+    );
+
+    const link = screen.getByRole("link", { name: "Analyze Another URL" });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/");
+  });
+
+  it("does not show the 'Analyze Another URL' link while loading", () => {
+    const { promise } = deferred<AuditResult>();
+    render(<ResultsPage url="https://example.com" analyze={() => promise} />);
+
+    expect(screen.queryByRole("link", { name: "Analyze Another URL" })).not.toBeInTheDocument();
+  });
+
+  it("does not show the 'Analyze Another URL' link on error", async () => {
+    render(
+      <ResultsPage
+        url="https://example.com"
+        analyze={async () => ({ errorType: "not_found", message: "ignored" })}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    expect(screen.queryByRole("link", { name: "Analyze Another URL" })).not.toBeInTheDocument();
+  });
+
   it("falls back to a generic message for an unrecognized error type", async () => {
     render(
       <ResultsPage

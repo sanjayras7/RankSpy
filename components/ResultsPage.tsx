@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { AuditResult, ErrorResult } from "@/lib/auditTypes";
 import ScoreCard from "@/components/ScoreCard";
 import TagResultCard from "@/components/TagResultCard";
@@ -86,6 +87,14 @@ export default function ResultsPage({ url, analyze = defaultAnalyze }: ResultsPa
           ))}
         </div>
       )}
+      <div className="flex justify-center pt-4">
+        <Link
+          href="/"
+          className="rounded-md bg-black px-6 py-3 text-base font-medium text-white"
+        >
+          Analyze Another URL
+        </Link>
+      </div>
     </main>
   );
 }
