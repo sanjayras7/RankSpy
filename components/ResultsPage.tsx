@@ -72,31 +72,49 @@ export default function ResultsPage({ url, analyze = defaultAnalyze }: ResultsPa
   const isPerfectScore = result.overallScore === 100;
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12 sm:px-6">
-      <ScoreCard result={result} />
-      <ShareButton url={url} />
-      {isPerfectScore ? (
-        <PerfectScoreState />
-      ) : (
-        <div className="flex flex-col gap-4">
-          {result.scores.map((tagScore) => (
-            <TagResultCard
-              key={tagScore.tag}
-              tagScore={tagScore}
-              fix={result.fixes.find((fix) => fix.tag === tagScore.tag)}
-              fixFailed={result.failedTags.includes(tagScore.tag)}
-            />
-          ))}
+    <div className="bg-radial-gradient min-h-screen w-full py-12 px-4 sm:px-6">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6">
+        {/* Page context audit target header */}
+        <div className="flex flex-col gap-1.5 mb-2">
+          <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest font-mono">Target Audit Host</span>
+          <h1 className="text-sm sm:text-base font-medium text-zinc-300 break-all font-mono bg-zinc-950/50 px-4 py-3 rounded-xl border border-zinc-800/50 flex items-center gap-2.5 shadow-lg shadow-indigo-950/10">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+            </span>
+            {url}
+          </h1>
         </div>
-      )}
-      <div className="flex justify-center pt-4">
-        <Link
-          href="/"
-          className="rounded-md bg-black px-6 py-3 text-base font-medium text-white"
-        >
-          Analyze Another URL
-        </Link>
-      </div>
-    </main>
+
+        <ScoreCard result={result} />
+        
+        <ShareButton url={url} />
+        
+        {isPerfectScore ? (
+          <PerfectScoreState />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {result.scores.map((tagScore) => (
+              <TagResultCard
+                key={tagScore.tag}
+                tagScore={tagScore}
+                fix={result.fixes.find((fix) => fix.tag === tagScore.tag)}
+                fixFailed={result.failedTags.includes(tagScore.tag)}
+              />
+            ))}
+          </div>
+        )}
+        
+        <div className="flex justify-center pt-6">
+          <Link
+            href="/"
+            className="w-full sm:w-auto rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-700 px-8 py-3.5 text-base font-semibold text-zinc-300 transition-all duration-150 text-center active:scale-95 shadow-md shadow-zinc-950/80"
+          >
+            Analyze Another URL
+          </Link>
+        </div>
+      </main>
+    </div>
   );
 }
+
