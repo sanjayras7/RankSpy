@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createHash } from "crypto";
 import { ParsedTagObject, TagScore } from "./scoringEngine";
+import { AuditResult } from "../auditTypes";
 
 export interface AiFixResult {
   tag: string;
@@ -14,7 +15,7 @@ export interface AiFixOutput {
 }
 
 interface CacheEntry {
-  data: AiFixOutput;
+  data: AiFixOutput | AuditResult;
   expiresAt: number;
 }
 
@@ -45,6 +46,32 @@ function setCachedFixes(urlHash: string, data: AiFixOutput): void {
     data,
     expiresAt: Date.now() + CACHE_TTL_MS,
   });
+}
+
+function getCachedShare(urlHash: string): AuditResult | null {
+  const entry = cache.get(`share:${urlHash}`);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    cache.delete(`share:${urlHash}`);
+    return null;
+  }
+  return entry.data as AuditResult;
+}
+
+function setCachedShare(urlHash: string, data: AuditResult): void {
+  cache.set(`share:${urlHash}`, {
+    data,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+}
+
+export { getCachedShare, setCachedShare };
+export function getShareCacheKey(urlHash: string): string {
+  return `share:${urlHash}`;
+}
+
+export function getFixCacheKey(urlHash: string): string {
+  return `fix:${urlHash}`;
 }
 
 function buildPrompt(

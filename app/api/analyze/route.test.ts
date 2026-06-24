@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
-const { mockFetchPageHtml, mockParseTags, mockScoreTags, mockGenerateFixes } = vi.hoisted(
+const { mockFetchPageHtml, mockParseTags, mockScoreTags, mockGenerateFixes, mockSetCachedShare } = vi.hoisted(
   () => ({
     mockFetchPageHtml: vi.fn(),
     mockParseTags: vi.fn(),
     mockScoreTags: vi.fn(),
     mockGenerateFixes: vi.fn(),
+    mockSetCachedShare: vi.fn(),
   }),
 );
 
@@ -23,6 +24,7 @@ vi.mock("@/lib/server/scoringEngine", () => ({
 
 vi.mock("@/lib/server/aiFixGenerator", () => ({
   generateFixes: mockGenerateFixes,
+  setCachedShare: mockSetCachedShare,
 }));
 
 import { GET } from "./route";

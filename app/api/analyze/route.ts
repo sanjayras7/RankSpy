@@ -3,7 +3,8 @@ import { createHash } from "crypto";
 import { fetchPageHtml } from "@/lib/server/urlFetcher";
 import { parseTags } from "@/lib/parseTags";
 import { scoreTags } from "@/lib/server/scoringEngine";
-import { generateFixes } from "@/lib/server/aiFixGenerator";
+import { generateFixes, setCachedShare } from "@/lib/server/aiFixGenerator";
+import { AuditResult } from "@/lib/auditTypes";
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get("url");
@@ -29,13 +30,15 @@ export async function GET(request: NextRequest) {
   const urlHash = createHash("sha256").update(normalizedUrl).digest("hex");
   const fixResult = await generateFixes(parsedTags, scoringResult.scores, urlHash);
 
-  const auditResult = {
+  const auditResult: AuditResult = {
     scores: scoringResult.scores,
     overallScore: scoringResult.overallScore,
     grade: scoringResult.grade,
     fixes: fixResult.fixes,
     failedTags: fixResult.failedTags,
   };
+
+  setCachedShare(urlHash, auditResult);
 
   return NextResponse.json(auditResult);
 }
