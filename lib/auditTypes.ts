@@ -1,21 +1,8 @@
-export type TagStatus = "good" | "warning" | "missing";
+import type { TagStatus, TagScore, Grade } from "./server/scoringEngine";
+import type { AiFixResult } from "./server/aiFixGenerator";
+import type { FetchErrorType } from "./server/urlFetcher";
 
-export interface TagScore {
-  tag: string;
-  value: string | null;
-  score: number;
-  maxScore: number;
-  status: TagStatus;
-  problem: string;
-}
-
-export interface AiFixResult {
-  tag: string;
-  suggestedFix: string;
-  charCount: number;
-}
-
-export type Grade = "A" | "B" | "C" | "D" | "F";
+export type { TagStatus, TagScore, Grade, AiFixResult };
 
 export interface AuditResult {
   scores: TagScore[];
@@ -25,7 +12,7 @@ export interface AuditResult {
   failedTags: string[];
 }
 
-export type ErrorType = "not_found" | "blocked" | "private" | "timeout" | "unreachable";
+export type ErrorType = FetchErrorType;
 
 export interface ErrorResult {
   errorType: ErrorType;
