@@ -1,5 +1,16 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import LandingPage from "@/components/LandingPage";
 
 export default function Page() {
-  return <LandingPage />;
+  const router = useRouter();
+
+  return (
+    <LandingPage
+      onAnalyze={(normalizedUrl) => {
+        router.push(`/result?url=${encodeURIComponent(normalizedUrl)}`);
+      }}
+    />
+  );
 }
