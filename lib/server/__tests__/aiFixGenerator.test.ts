@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { generateFixes } from "../aiFixGenerator";
+import { generateFixes, getCachedShare, setCachedShare, getShareCacheKey, getFixCacheKey } from "../aiFixGenerator";
 import type { ParsedTagObject, TagScore } from "../scoringEngine";
+import type { AuditResult } from "../../auditTypes";
 import Anthropic from "@anthropic-ai/sdk";
 
 // Mock the Anthropic SDK
@@ -350,5 +351,89 @@ describe("aiFixGenerator", () => {
         ]
       })
     );
+  });
+});
+
+describe("share cache functions", () => {
+  const mockAuditResult: AuditResult = {
+    scores: [
+      {
+        tag: "title",
+        value: "Test Title",
+        score: 20,
+        maxScore: 20,
+        status: "good",
+        problem: "",
+      },
+    ],
+    overallScore: 85,
+    grade: "B",
+    fixes: [
+      { tag: "metaDescription", suggestedFix: "Better description here", charCount: 21 },
+    ],
+    failedTags: [],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should store and retrieve audit result from share cache", () => {
+    const urlHash = "test-hash-123";
+    setCachedShare(urlHash, mockAuditResult);
+
+    const retrieved = getCachedShare(urlHash);
+    expect(retrieved).toEqual(mockAuditResult);
+  });
+
+  it("should return null for unknown hash", () => {
+    const retrieved = getCachedShare("unknown-hash");
+    expect(retrieved).toBeNull();
+  });
+
+  it("should not interfere with fix cache - different keys", () => {
+    const urlHash = "shared-hash";
+    
+    setCachedShare(urlHash, mockAuditResult);
+    
+    // The fix cache should be separate
+    const fixCacheKey = getFixCacheKey(urlHash);
+    const shareCacheKey = getShareCacheKey(urlHash);
+    
+    expect(fixCacheKey).toBe(`fix:${urlHash}`);
+    expect(shareCacheKey).toBe(`share:${urlHash}`);
+    expect(fixCacheKey).not.toBe(shareCacheKey);
+  });
+
+  it("should handle multiple share entries independently", () => {
+    const hash1 = "hash-one";
+    const hash2 = "hash-two";
+    const result1: AuditResult = { ...mockAuditResult, overallScore: 90 };
+    const result2: AuditResult = { ...mockAuditResult, overallScore: 70 };
+
+    setCachedShare(hash1, result1);
+    setCachedShare(hash2, result2);
+
+    expect(getCachedShare(hash1)).toEqual(result1);
+    expect(getCachedShare(hash2)).toEqual(result2);
+  });
+
+  it("should return null for expired share cache entry", () => {
+    const urlHash = "expiring-hash";
+    
+    // Use vi.useFakeTimers to control time
+    vi.useFakeTimers();
+    const now = Date.now();
+    vi.setSystemTime(now);
+    
+    setCachedShare(urlHash, mockAuditResult);
+    
+    // Fast forward past 24 hours
+    vi.setSystemTime(now + 24 * 60 * 60 * 1000 + 1000);
+    
+    const retrieved = getCachedShare(urlHash);
+    expect(retrieved).toBeNull();
+    
+    vi.useRealTimers();
   });
 });
